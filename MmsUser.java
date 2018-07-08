@@ -1,75 +1,77 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package makemystay;
-
+import java.util.*;
 /**
  *
- * @author owner
+ * @author Josh Seaton
+ * Created: 6/28/2018
+ * Version: 1
+ * Version: 2
+ *  JS: Made all variables final; updated @Override notation
+ * Version: 3
+ *  JS: Created a parameterized constructor for all-at-once object creation
+ * Updated: 7/7/2018
+ *
  */
 public class MmsUser implements IMmsUser {
-    private int userId;
-    private String username;
-    private String password;
-    private String email;
-    private String lastName;
-    private String firstName;
+    private final int userId;
+    private final String username;
+    private final String password;
+    private final String email;
+    private final String lastName;
+    private final String firstName;
     
-    public void setUserId (int userId) {
+    public MmsUser (int userId, String username, String password,
+            String email, String lastName, String firstName) {
         this.userId = userId;
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.lastName = lastName;
+        this.firstName = firstName;
     }
     
+    @Override
     public int getUserId() {
         return userId;
     }
     
-    public void setUsername (String username) {
-        this.username = username;
-    }
-        
+    @Override 
     public String getUsername() {
         return username;
     }
     
-    public void setPassword (String password) {
-        this.password = password;
-    }
-    
+    @Override
     public String getPassword() {
         return password;
     }
     
-    public void setEmail (String email) {
-        this.email = email;
-    }
-    
+    @Override
     public String getEmail() {
         return email;
     }
     
-    public void setLastName (String lastName) {
-        this.lastName = lastName;
-    }
-    
+    @Override
     public String getLastName() {
         return lastName;
     }
     
-    public void setFirstName (String firstName) {
-        this.firstName = firstName;
-    }
-    
+    @Override
     public String getFirstName() {
         return firstName;
     }
     
+    @Override
     public boolean isPropertyOwner() {
         return MmsUserManager.isPropertyOwner(userId);
     }
     
+    @Override
     public boolean isAssignedAsDelegate() {
-        return false;  // This line is a place holder
+        List<IMmsProperty> myDelegations = this.getPropertiesAsDelegate();
+        return !myDelegations.isEmpty();
+    }
+    
+    public List<IMmsProperty> getPropertiesAsDelegate() {
+        return MmsUserManager.getPropertiesAsDelegate(this);
     }
 }
