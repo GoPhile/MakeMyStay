@@ -77,7 +77,7 @@ public class MmsPropertyManager {
         return listDelegates;
     }
     
-    private static boolean hasCollision (int owner, String propertyName) {
+    private static boolean ownerPropertyNameExists (int owner, String propertyName) {
         boolean hasCollision = true;
         
         try {
@@ -104,7 +104,7 @@ public class MmsPropertyManager {
             String telephone) {
         IMmsProperty newProperty = null;
         
-        if (!MmsPropertyManager.hasCollision(owner, propertyName)) {
+        if (!MmsPropertyManager.ownerPropertyNameExists(owner, propertyName)) {
             try {
                 Connection conn = MmsDb.getOpenConnection();
                 Statement s = conn.createStatement();
@@ -167,5 +167,75 @@ public class MmsPropertyManager {
             ex.printStackTrace();
         }
     }
+    
+    private static void setDeletedValueOfPropertyDelegatePair (int propertyDelegatePair, boolean value) {
+        try {
+            Connection conn = MmsDb.getOpenConnection();
+            Statement s = conn.createStatement();
+            String sqlString = "UPDATE PropertyDelegateMap " +
+                                "SET Deleted=" + value +
+                                " WHERE IdPropertyDelegate=" + propertyDelegatePair + ";";
+            s.executeUpdate(sqlString);
+        }
+        catch(Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+    
+    private static int getIdPropertyDelegatePair (IMmsProperty property, IMmsUser delegate) {
+        int recordNum = 0;
+        
+        try {
+            Connection conn = MmsDb.getOpenConnection();
+            Statement s = conn.createStatement();
+            String sqlString = "SELECT IdPropertyDelegate " +
+                    "FROM IdPropertyDelegateMap " +
+                    "WHERE IdProperty=" + property.getPropertyId() + 
+                        " AND IdUser=" + delegate.getUserId() + ";";
+            ResultSet rs = s.executeQuery(sqlString);
+            
+            if (rs.next()) {
+                recordNum = rs.getInt("IdPropertyDelegate");
+            }
+            
+            rs.close();
+            s.close();
+        }
+        catch(Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        return recordNum;
+    }
+    
+    private static void addPropertyDelegatePair (IMmsProperty property, IMmsUser delegate) {
+        try {
+            Connection conn = MmsDb.getOpenConnection();
+            Statement s = conn.createStatement();
+            String sqlString = "INSERT INTO PropertyDelegateMap " +
+                    "(IdProperty, IdUser, Deleted) " +
+                    "Values (" + property.getPropertyId() + ", " + delegate.getUserId() + ", False);";
+            s.executeUpdate(sqlString);
+            s.close();
+        }
+        catch(Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+    
+    public static void addDelegateToProperty (IMmsProperty property, IMmsUser delegate) {
+        int recordNum = getIdPropertyDelegatePair(property, delegate);
+        
+        if (recordNum > 0) 
+            setDeletedValueOfPropertyDelegatePair(recordNum, true);
+        else
+            addPropertyDelegatePair(property, delegate);
+    }
+    
+    public static void removeDelegateFromProperty (IMmsProperty property, IMmsUser delegate) {
+        int recordNum = getIdPropertyDelegatePair(property, delegate);
+        
+        if (recordNum > 0) 
+            setDeletedValueOfPropertyDelegatePair(recordNum, false);
+    }
 }
-
