@@ -1,16 +1,15 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package makemystay;
 import java.sql.*;
 
 /**
  *
- * @author owner
+ * @author Josh Seaton
+ * Created: 6/28/2018
+ * Version: 2
+ * JS: Now, it attempts to not close the connection while running
  */
 public class MmsDb {
+    private static Connection conn;
     
     public static void test () {
         try {
@@ -32,16 +31,27 @@ public class MmsDb {
     }
     
     public static Connection getOpenConnection() {
-        Connection conn = null;
         try {
-            conn = DriverManager.getConnection(
-                     "jdbc:ucanaccess://C:/users/owner/documents/MakeMyStay.accdb");
-            return conn;
+            if (conn == null || conn.isClosed()) {
+                    conn = DriverManager.getConnection(
+                             "jdbc:ucanaccess://C:/users/owner/documents/MakeMyStay.accdb");
+            }
         }
         catch (Exception ex) {
              ex.printStackTrace();
         }
+        
         return conn;
     }
     
+    public static void closeConnection() {
+        try {
+            if (conn != null || !conn.isClosed()) {
+                conn.close();
+            }
+        }
+        catch (Exception ex) {
+             ex.printStackTrace();
+        }
+    }
 }
