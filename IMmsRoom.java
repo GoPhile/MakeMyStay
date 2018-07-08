@@ -1,14 +1,16 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package makemystay;
 
 /**
  *
- * @author owner
+ * @author Josh Seaton
+ * Created: 6/28/2018
+ * Version: 1
  */
 public interface IMmsRoom {
-    
+    public int getRoomId();
+    public IMmsProperty getProperty();
+    public String getDesignation();
+    public String getDescription();
+    public boolean hasQualityDescriptor();
+    public String getQualityDescriptor();
 }
