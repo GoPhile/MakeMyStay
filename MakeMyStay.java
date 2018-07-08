@@ -18,9 +18,9 @@ public class MakeMyStay {
         for (IMmsUser user : userList) {
             System.out.println(user.getUsername());
             System.out.println("   Property Owner: " + user.isPropertyOwner());
-            System.out.println(user.isAssignedAsDelegate());
-            System.out.println(MmsUserManager.addNewUser("HotelMogul", "test", "Smith", "Johnny", "test@test.gov") == null);
+            System.out.println("   Is Delegate: " + user.isAssignedAsDelegate());
         }
+        System.out.println("Collision Test: " + (MmsUserManager.addNewUser("HotelMogul", "test", "Smith", "Johnny", "test@test.gov") == null));
         MmsDb.closeConnection();
     }
 }
