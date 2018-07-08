@@ -1,41 +1,92 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package makemystay;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.sql.Types;
+import java.sql.*;
 import java.util.*;
 
 /**
  *
  * @author Josh Seaton
+ * Created: 6/28/2018
+ * Version: 1
  */
 public class MmsUserManager {
+    /**
+     * 
+     * @param username
+     * @return Returns either null is username is not found in the database,
+     * or an IMmsUser handle if the username if found. Always check for null
+     * when using this method.
+     */
+    public static IMmsUser getUserByUsername (String username) {
+        IMmsUser user = null;
+        try {
+            Connection conn = MmsDb.getOpenConnection();
+            Statement s = conn.createStatement();
+            ResultSet rs = s.executeQuery(
+                    "SELECT IdUser FROM User " +
+                    "WHERE UserName ='" + username + "' " +
+                        " AND Deleted=False;");
+            if (rs.next()) {
+                user = MmsUserManager.getUser(rs.getInt("IdUser"));
+            }
+            
+            rs.close();
+            s.close();
+        }
+        catch(Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        return user;
+    }
+    
+    public static IMmsUser getUser (int userId) {
+        MmsUser user = null;
+        try {
+            Connection conn = MmsDb.getOpenConnection();
+            Statement s = conn.createStatement();
+            ResultSet rs = s.executeQuery(
+                    "SELECT * FROM User " +
+                    "WHERE IdUser =" + userId +
+                        " AND Deleted=False;");
+            while (rs.next()) {
+                user = new MmsUser(
+                    rs.getInt("IdUser"),
+                    rs.getString("Username"),
+                    rs.getString("Password"),
+                    rs.getString("Email"),
+                    rs.getString("LName"),
+                    rs.getString("FName"));
+            }
+            
+            rs.close();
+            s.close();
+        }
+        catch(Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        return user;
+    }
+    /**
+     *Do not use this method. It was for testing purposes only.
+     */
+    
     public static List<IMmsUser> getUsers() {
         List<IMmsUser> userList = new ArrayList<IMmsUser>();
         
         try {
             Connection conn = MmsDb.getOpenConnection();
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT * FROM User WHERE Enabled=True;");
+            ResultSet rs = s.executeQuery(
+                        "SELECT * " +
+                                "FROM User " +
+                                "WHERE Deleted=False;");
             while (rs.next()) {
-                MmsUser newItem = new MmsUser();
-                newItem.setUserId(rs.getInt("IdUser"));
-                newItem.setUsername(rs.getString("Username"));
-                newItem.setPassword(rs.getString("Password"));
-                newItem.setEmail(rs.getString("Email"));
-                newItem.setLastName(rs.getString("LName"));
-                newItem.setFirstName(rs.getString("FName"));
+                IMmsUser newItem = MmsUserManager.getUser(rs.getInt("IdUser"));
                 userList.add(newItem);
             }
-            
+            rs.close();
             s.close();
-            conn.close();
         }
         catch(Exception ex) {
             ex.printStackTrace();
@@ -45,7 +96,7 @@ public class MmsUserManager {
     }
     
     public static boolean isPropertyOwner (int userId) {
-        boolean retVal = false;
+        boolean isPropertyOwner = false;
         
         try {
             Connection conn = MmsDb.getOpenConnection();
@@ -56,25 +107,147 @@ public class MmsUserManager {
             //System.out.println(getSqlTypeName(rs.getMetaData().getColumnType(1)));
             rs.next();
             if (rs.getInt("PropertyCount") > 0)
-                retVal = true;
+                isPropertyOwner = true;
             
+            rs.close();
             s.close();
-            conn.close();
         }
         catch(Exception ex) {
             ex.printStackTrace();
         }
         
-        return retVal;
+        return isPropertyOwner;
     }
     
-/*
+    public static List<IMmsProperty> getPropertiesAsOwner (IMmsUser user) {
+        return getPropertiesAsOwner(user.getUserId());
+    }
+    
+    public static List<IMmsProperty> getPropertiesAsOwner (int userId) {
+        List<IMmsProperty> properties = new ArrayList<IMmsProperty>();
+        
+        try {
+            Connection conn = MmsDb.getOpenConnection();
+            Statement s = conn.createStatement();
+            String sqlString = "SELECT IdProperty FROM Property " +
+                                "WHERE IdUser=" + userId + " AND Deleted=False;";
+            ResultSet rs = s.executeQuery(sqlString);
+            while (rs.next()) {
+                properties.add(MmsPropertyManager.getProperty(rs.getInt("IdProperty")));
+            }
+            
+            rs.close();
+            s.close();
+        }
+        catch(Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        return properties;
+    }
+    
+    public static List<IMmsProperty> getPropertiesAsDelegate (IMmsUser user) {
+        return getPropertiesAsDelegate(user.getUserId());
+    }
+    
+    public static List<IMmsProperty> getPropertiesAsDelegate (int userId) {
+        List<IMmsProperty> properties = new ArrayList<IMmsProperty>();
+        
+        try {
+            Connection conn = MmsDb.getOpenConnection();
+            Statement s = conn.createStatement();
+            String sqlString = "SELECT IdProperty FROM PropertyDelegateMap " +
+                                "WHERE IdUser=" + userId + " AND Deleted=False;";
+            ResultSet rs = s.executeQuery(sqlString);
+            while (rs.next()) {
+                properties.add(MmsPropertyManager.getProperty(rs.getInt("IdProperty")));
+            }
+            
+            rs.close();
+            s.close();
+        }
+        catch(Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        return properties;
+    }
+    
+    /**
+     * This method is an internal check for collisions with existing database
+     * values. It should not be a replacement for properly validating new user
+     * entries. This should be implemented as business logic. This method
+     * merely attempts to reduce or eliminate SQL exceptions which may be
+     * difficult or complex to debug.
+     */
+    
+    private static boolean hasCollision (String username, String email) {
+        boolean hasCollision = true;
+        
+        try {
+            Connection conn = MmsDb.getOpenConnection();
+            Statement s = conn.createStatement();
+            String sqlString = "SELECT Count(*) as UserCount " +
+                                "FROM User " +
+                                "WHERE UserName='" + username + "' OR " +
+                                    "Email='" + email + "';";            
+            ResultSet rs = s.executeQuery(sqlString);
+            
+            while (rs.next()) {
+                if (rs.getInt("UserCount") == 0)
+                    hasCollision = false;
+            }
+            
+            rs.close();
+            s.close();
+        }
+        catch(Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        return hasCollision;
+    }
+    
+    public static IMmsUser addNewUser (String username, String password,
+            String lastName, String firstName, String email) {
+        IMmsUser newUser = null;
+        
+        if (!MmsUserManager.hasCollision(username, email)) {
+            try {
+                Connection conn = MmsDb.getOpenConnection();
+                Statement s = conn.createStatement();
+                String sqlString = "INSERT INTO User " +
+                            "(UserName, Password, LName, FName, Email, Deleted) " +
+                        "VALUES(" + username + ", " + password + ", " + lastName + 
+                            ", " + firstName + ", " + email + ", False;";
+                s.executeQuery(sqlString);
+
+                s = conn.createStatement();
+                sqlString = "SELECT IdUser FROM User WHERE UserName='" + "';";
+                ResultSet rs = s.executeQuery(sqlString);
+
+                while (rs.next()) {
+                    newUser = MmsUserManager.getUser(rs.getInt("IdUser"));
+                }
+
+                rs.close();
+                s.close();
+            }
+            catch(Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+        
+        return newUser;
+    }
+    
+/**
  * The following code was found on Stack Overflow. I did not write it.
  * It's for test purposes only.
  *   
  */
-    
-    public static String getSqlTypeName(int type) {
+
+    private static String getSqlTypeName(int type) {
         switch (type) {
         case Types.BIT:
             return "BIT";
