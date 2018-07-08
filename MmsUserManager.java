@@ -7,6 +7,9 @@ import java.util.*;
  * @author Josh Seaton
  * Created: 6/28/2018
  * Version: 1
+ * Version: 2
+ * Updated: 7/8/2018
+ *  JS: Fixed minor bugs
  */
 public class MmsUserManager {
     /**
@@ -218,17 +221,22 @@ public class MmsUserManager {
                 Statement s = conn.createStatement();
                 String sqlString = "INSERT INTO User " +
                             "(UserName, Password, LName, FName, Email, Deleted) " +
-                        "VALUES(" + username + ", " + password + ", " + lastName + 
-                            ", " + firstName + ", " + email + ", False;";
-                s.executeQuery(sqlString);
-
+                        "VALUES ('" +
+                        username.replace("'", "''") + "', '" +
+                        password.replace("'", "''") + "', '" +
+                        lastName.replace("'", "''") + "', '" +
+                        firstName.replace("'", "''") + "', '" +
+                        email.replace("'", "''") + "', False);";
+                System.out.println(sqlString);
+                s.executeUpdate(sqlString);
+                s.close();
                 s = conn.createStatement();
-                sqlString = "SELECT IdUser FROM User WHERE UserName='" + "';";
+                sqlString = "SELECT IdUser FROM User WHERE UserName='" +
+                        username.replaceAll("'", "''") + "';";
                 ResultSet rs = s.executeQuery(sqlString);
 
-                while (rs.next()) {
+                if (rs.next())
                     newUser = MmsUserManager.getUser(rs.getInt("IdUser"));
-                }
 
                 rs.close();
                 s.close();
