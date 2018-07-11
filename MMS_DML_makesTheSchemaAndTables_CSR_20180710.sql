@@ -1,6 +1,6 @@
 -- MySQL Workbench Forward Engineering
 
-SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_INDEX_CHECKS=@@INDEX_CHECKS, INDEX_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
 
@@ -37,10 +37,9 @@ USE `MakeMyStay` ;
 CREATE TABLE IF NOT EXISTS `MakeMyStay`.`UserType` (
   `idUserType` INT AUTO_INCREMENT NOT NULL,
   `UserDescription` VARCHAR(15) NOT NULL,
-  UNIQUE INDEX `idUserType_UNIQUE` (`idUserType` ASC),
+  INDEX `idUserType_INDEX` (`idUserType` ASC),
   PRIMARY KEY (`idUserType`),
-  UNIQUE INDEX `UserDescription_UNIQUE` (`UserDescription` ASC),
-  INDEX `idUserType_INDEX` (`idUserType` ASC))
+  INDEX `UserDescription_INDEX` (`UserDescription` ASC))
 ENGINE = InnoDB
 COMMENT = 'Stores unique roles assignable to MMS users.';
 
@@ -56,10 +55,9 @@ CREATE TABLE IF NOT EXISTS `MakeMyStay`.`User` (
   `Inactive` TINYINT NULL,
   PRIMARY KEY (`IdUser`),
   INDEX `idUser_INDEX` (`IdUser` ASC),
-  UNIQUE INDEX `idUserType_UNIQUE` (`IdUserType` ASC),
-  UNIQUE INDEX `Email_UNIQUE` (`Email` ASC),
-  UNIQUE INDEX `UserName_UNIQUE` (`UserName` ASC),
-  UNIQUE INDEX `LastName_UNIQUE` (`LastName` ASC),
+  INDEX `Email_INDEX` (`Email` ASC),
+  INDEX `UserName_INDEX` (`UserName` ASC),
+  INDEX `LastName_INDEX` (`LastName` ASC),
   INDEX `idUserType_INDEX` (`IdUserType` ASC),
   CONSTRAINT `idUserType_FK`
     FOREIGN KEY (`IdUserType`)
@@ -74,10 +72,9 @@ CREATE TABLE IF NOT EXISTS `MakeMyStay`.`QualityDescriptor` (
   `Suggested` VARCHAR(45) NOT NULL,
   `Ordinal` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idQualityDescriptor`),
-  UNIQUE INDEX `idQualityDescriptor_UNIQUE` (`idQualityDescriptor` ASC),
-  UNIQUE INDEX `Descriptor_UNIQUE` (`Descriptor` ASC),
-  UNIQUE INDEX `Suggested_UNIQUE` (`Suggested` ASC),
-  INDEX `idQualityDescriptor_INDEX` (`idQualityDescriptor` ASC))
+  INDEX `idQualityDescriptor_INDEX` (`idQualityDescriptor` ASC),
+  INDEX `Descriptor_INDEX` (`Descriptor` ASC),
+  INDEX `Suggested_INDEX` (`Suggested` ASC))
 ENGINE = InnoDB
 COMMENT = 'Stores the quality of room descriptor for each room. In future versions, teh QoR may be assigned as a range to a block of rooms.';
 
@@ -86,10 +83,9 @@ CREATE TABLE IF NOT EXISTS `MakeMyStay`.`ReservationStatus` (
   `Description` VARCHAR(500) NOT NULL,
   `Ordinal` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idReservationStatus`),
-  UNIQUE INDEX `idResvervationStatus_UNIQUE` (`idReservationStatus` ASC),
-  UNIQUE INDEX `Description_UNIQUE` (`Description` ASC),
-  UNIQUE INDEX `Ordinal_UNIQUE` (`Ordinal` ASC),
-  INDEX `idReservationStatus_INDEX` (`idReservationStatus` ASC))
+  INDEX `idResvervationStatus_INDEX` (`idReservationStatus` ASC),
+  INDEX `Description_INDEX` (`Description` ASC),
+  INDEX `Ordinal_INDEX` (`Ordinal` ASC))
 ENGINE = InnoDB
 COMMENT = 'Stores reservation status flags.';
 
@@ -105,11 +101,10 @@ CREATE TABLE IF NOT EXISTS `MakeMyStay`.`Property` (
   `PostCode` VARCHAR(5) NOT NULL,
   `Telephone` TEXT(15) NOT NULL,
   `Deleted` TINYINT NULL,
-  UNIQUE INDEX `idUser_UNIQUE` (`idUser` ASC),
-  UNIQUE INDEX `PropertyName_UNIQUE` (`PropertyName` ASC),
-  UNIQUE INDEX `StreetAddress_UNIQUE` (`StreetAddress` ASC),
+  INDEX `idUser_INDEX` (`idUser` ASC),
+  INDEX `PropertyName_INDEX` (`PropertyName` ASC),
+  INDEX `StreetAddress_INDEX` (`StreetAddress` ASC),
   INDEX `idProperty_INDEX` (`idProperty` ASC),
-  UNIQUE INDEX `idProperty_UNIQUE` (`idProperty` ASC),
   PRIMARY KEY (`idProperty`),
   CONSTRAINT `idUser_FK`
     FOREIGN KEY (`idUser`)
@@ -126,9 +121,8 @@ CREATE TABLE IF NOT EXISTS `MakeMyStay`.`Room` (
   `Description` MEDIUMTEXT NOT NULL,
   `Inactive` TINYINT NOT NULL,
   PRIMARY KEY (`idRoom`),
-  UNIQUE INDEX `idProperty_UNIQUE` (`IdProperty` ASC),
+  INDEX `idProperty_INDEX` (`IdProperty` ASC),
   INDEX `idRoom_INDEX` (`idRoom` ASC),
-  UNIQUE INDEX `idRoom_UNIQUE` (`idRoom` ASC),
   CONSTRAINT `idProperty_FK`
     FOREIGN KEY (`IdProperty`)
     REFERENCES `MakeMyStay`.`Property` (`idUser`)
@@ -147,14 +141,13 @@ CREATE TABLE IF NOT EXISTS `MakeMyStay`.`Reservation` (
   `Created` TIMESTAMP NOT NULL,
   `Inactive` TINYINT NULL,
   PRIMARY KEY (`idReservation`),
-  UNIQUE INDEX `idReservation_UNIQUE` (`idReservation` ASC),
-  UNIQUE INDEX `idUser_UNIQUE` (`idUser` ASC),
-  UNIQUE INDEX `idRoom_UNIQUE` (`idRoom` ASC),
-  UNIQUE INDEX `idStatus_UNIQUE` (`idReservationStatus` ASC),
-  UNIQUE INDEX `StartDateTime_UNIQUE` (`StartDateTime` ASC),
-  UNIQUE INDEX `EndDateTime_UNIQUE` (`EndDateTime` ASC),
-  UNIQUE INDEX `CreatedDateTime_UNIQUE` (`Created` ASC),
-  INDEX `IdReserveration_INDEX` (`idReservation` ASC),
+  INDEX `idReservation_INDEX` (`idReservation` ASC),
+  INDEX `idUser_INDEX` (`idUser` ASC),
+  INDEX `idRoom_INDEX` (`idRoom` ASC),
+  INDEX `idStatus_INDEX` (`idReservationStatus` ASC),
+  INDEX `StartDateTime_INDEX` (`StartDateTime` ASC),
+  INDEX `EndDateTime_INDEX` (`EndDateTime` ASC),
+  INDEX `CreatedDateTime_INDEX` (`Created` ASC),
   CONSTRAINT `idResvUser_FK`
     FOREIGN KEY (`idUser`)
     REFERENCES `MakeMyStay`.`User` (`IdUser`)
@@ -181,9 +174,8 @@ CREATE TABLE IF NOT EXISTS `MakeMyStay`.`PerDiemRate` (
   `DateTime` DATETIME NOT NULL,
   `Rate` DECIMAL(3,2) NOT NULL,
   PRIMARY KEY (`idPerDiemRate`),
-  UNIQUE INDEX `idPerDiemRate_UNIQUE` (`idPerDiemRate` ASC),
-  UNIQUE INDEX `idRoom_UNIQUE` (`idRoom` ASC),
   INDEX `idPerDiemRate_INDEX` (`idPerDiemRate` ASC),
+  INDEX `idRoom_INDEX` (`idRoom` ASC),
   CONSTRAINT `idPDRoom_FK`
     FOREIGN KEY (`idRoom`)
     REFERENCES `MakeMyStay`.`Room` (`idRoom`)
@@ -203,17 +195,16 @@ CREATE TABLE IF NOT EXISTS `MakeMyStay`.`DescriptorSelection` (
   `idQualityDescriptor` INT NOT NULL,
   `InUse` TINYINT UNSIGNED NULL,
   PRIMARY KEY (`idDescriptorSelection`),
-  UNIQUE INDEX `idProperty_UNIQUE` (`idProperty` ASC),
-  UNIQUE INDEX `idDescriptorSelection_UNIQUE` (`idDescriptorSelection` ASC),
-  UNIQUE INDEX `idQualityDescriptor_UNIQUE` (`idQualityDescriptor` ASC),
+  INDEX `idProperty_INDEX` (`idProperty` ASC),
   INDEX `idDescriptorSelection_INDEX` (`idDescriptorSelection` ASC),
+  INDEX `idQualityDescriptor_INDEX` (`idQualityDescriptor` ASC),
   CONSTRAINT `idDescProperty_FK`
     FOREIGN KEY (`idProperty`)
     REFERENCES `MakeMyStay`.`Property` (`idProperty`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-COMMENT = 'Sets the overall quality rating of a property.'
+COMMENT = 'Sets the overall quality rating of a property.';
 
 CREATE TABLE IF NOT EXISTS `MakeMyStay`.`PropertyDelegationMap` (
   `idPropertyDelegate` INT NOT NULL,
@@ -223,7 +214,7 @@ CREATE TABLE IF NOT EXISTS `MakeMyStay`.`PropertyDelegationMap` (
   `PropertyDelegationMapcol` VARCHAR(45) NULL,
   PRIMARY KEY (`idPropertyDelegate`),
   INDEX `idPropertyDelegatie_INDEX` (`idPropertyDelegate` ASC),
-  UNIQUE INDEX `idUser_UNIQUE` (`idUser` ASC),
+  INDEX `idUser_INDEX` (`idUser` ASC),
   CONSTRAINT `idDelProperty_FK`
     FOREIGN KEY (`idProperty`)
     REFERENCES `MakeMyStay`.`Property` (`idProperty`)
